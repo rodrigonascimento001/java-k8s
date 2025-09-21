@@ -1,0 +1,58 @@
+name: build-test-deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout do repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Instalar JDK 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # 3. Build e testes
+      - name: Build with Maven
+        run: mvn -B clean verify
+
+      # 4. Build da imagem (Paketo Buildpacks)
+      - name: Build Docker image with Spring Boot
+        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
+
+      # 5. Instalar kubectl
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      # 6. Instalar kind
+      - name: Set up kind
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: ci-cluster
+
+      # 7. Carregar imagem no kind
+      - name: Load Docker image into kind
+        run: kind load docker-image springboot-kind-demo:ci --name ci-cluster
+
+      # 8. Aplicar manifests
+      - name: Deploy to kind
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl rollout status deployment/springboot-demo
+
+      # 9. Testar se o pod subiu (exemplo de sanity check)
+      - name: Check pods
+        run: kubectl get pods -o wide
