@@ -44,7 +44,7 @@ jobs:
 
       # 7. Carregar imagem no kind
       - name: Load Docker image into kind
-        run: kind load docker-image springboot-kind-demo:ci --name ci-cluster
+        run: kind load docker-image springboot-kind-demo:0.1.0 --name ci-cluster
 
       # 8. Aplicar manifests
       - name: Deploy to kind
