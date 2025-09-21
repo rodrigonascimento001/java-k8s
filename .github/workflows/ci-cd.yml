@@ -22,37 +22,47 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # 3. Build e testes
-      - name: Build with Maven
-        run: mvn -B clean verify
+      # 3. Build da aplicação e criação da imagem Docker
+      - name: Build Spring Boot image
+        run: mvn -B spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
 
-      # 4. Build da imagem (Paketo Buildpacks)
-      - name: Build Docker image with Spring Boot
-        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:0.1.0
-
-      # 5. Instalar kubectl
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'latest'
-
-      # 6. Instalar kind
+      # 4. Instalar Kind
       - name: Set up kind
         uses: helm/kind-action@v1
         with:
           cluster_name: ci-cluster
 
-      # 7. Carregar imagem no kind
+      # 5. Carregar imagem no kind
       - name: Load Docker image into kind
-        run: kind load docker-image springboot-kind-demo:0.1.0 --name ci-cluster
+        run: kind load docker-image springboot-kind-demo:ci --name ci-cluster
 
-      # 8. Aplicar manifests
+      # 6. Deploy no Kubernetes
       - name: Deploy to kind
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
-          kubectl rollout status deployment/springboot-demo
+          kubectl apply -f k8s/ingress.yaml
+          kubectl rollout status deployment/springboot-demo --timeout=60s
 
-      # 9. Testar se o pod subiu (exemplo de sanity check)
-      - name: Check pods
-        run: kubectl get pods -o wide
+      # 7. Instalar Ingress Controller (NGINX)
+      - name: Install NGINX ingress controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=Available deployment/ingress-nginx-controller \
+            --timeout=90s
+
+      # 8. Testar health endpoint (via port-forward)
+      - name: Test health endpoint
+        run: |
+          kubectl port-forward service/springboot-demo 8080:8080 &
+          sleep 10
+          curl -f http://localhost:8080/actuator/health
+
+      # 9. Debug pods (sempre roda)
+      - name: Debug pods
+        if: always()
+        run: |
+          kubectl get pods -o wide
+          kubectl describe pods
+          kubectl logs -l app=springboot-demo --tail=100 || true

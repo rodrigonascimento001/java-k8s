@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
         - name: app
-          image: springboot-kind-demo:0.1.0
+          image: springboot-kind-demo:ci   # alinhado com workflow
           ports:
             - containerPort: 8080
           readinessProbe:
             httpGet:
-              path: /
+              path: /actuator/health
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 5
