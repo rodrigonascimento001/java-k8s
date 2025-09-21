@@ -1,0 +1,22 @@
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Docker image
+        run: mvn -B spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
+
+      - name: Push manifests (git ops)
+        run: |
+          git config user.email "ci-bot@example.com"
+          git config user.name "ci-bot"
+          git add k8s/
+          git commit -m "Update Kubernetes manifests [skip ci]" || echo "No changes"
+          git push origin main
