@@ -1,0 +1,25 @@
+# Configuração da imagem da aplicação
+image:
+  repository: springboot-kind-demo   # nome da imagem (local ou remoto)
+  tag: "ci"                          # o GitHub Actions vai substituir essa tag
+  pullPolicy: IfNotPresent           # evita baixar de novo se já existir no node
+
+# Configuração do service
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Configuração do deployment
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Configuração do readiness/liveness probe
+probe:
+  path: /actuator/health
+  port: 8080
