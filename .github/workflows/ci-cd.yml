@@ -28,7 +28,7 @@ jobs:
 
       # 4. Build da imagem (Paketo Buildpacks)
       - name: Build Docker image with Spring Boot
-        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
+        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:0.1.0
 
       # 5. Instalar kubectl
       - name: Install kubectl
