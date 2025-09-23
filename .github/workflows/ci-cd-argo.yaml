@@ -6,6 +6,9 @@ on:
       - main
       - develop
 
+permissions:
+  contents: write
+
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
@@ -20,6 +23,10 @@ jobs:
 
       - name: Build Docker image
         run: mvn -B spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
+
+      - name: Set up git for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
       - name: Push manifests (git ops)
         run: |
