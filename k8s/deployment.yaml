@@ -1,25 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-demo
+  name: {{ include "springboot-demo.fullname" . }}
+  labels:
+    app: {{ include "springboot-demo.name" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: springboot-demo
+      app: {{ include "springboot-demo.name" . }}
   template:
     metadata:
       labels:
-        app: springboot-demo
+        app: {{ include "springboot-demo.name" . }}
     spec:
       containers:
-        - name: app
-          image: springboot-kind-demo:0.1.0
+        - name: {{ include "springboot-demo.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.service.port }}
           readinessProbe:
             httpGet:
-              path: /
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 5
+              path: {{ .Values.probe.path }}
+              port: {{ .Values.probe.port }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probe.path }}
+              port: {{ .Values.probe.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+

@@ -1,12 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: springboot-demo
+  name: {{ include "springboot-demo.fullname" . }}
+  labels:
+    app: {{ include "springboot-demo.name" . }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   selector:
-    app: springboot-demo
+    app: {{ include "springboot-demo.name" . }}
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+
