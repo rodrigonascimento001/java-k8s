@@ -27,4 +27,4 @@ jobs:
           git config user.name "ci-bot"
           git add k8s/
           git commit -m "Update Kubernetes manifests [skip ci]" || echo "No changes"
-          git push origin main
+          git push origin ${{ github.ref_name }}
