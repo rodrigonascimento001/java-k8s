@@ -23,7 +23,7 @@ jobs:
 
       - name: Push manifests (git ops)
         run: |
-          git config user.email "ci-bot@example.com"
+          git config user.email "rodrigo_allexandre@yahoo.com.br"
           git config user.name "ci-bot"
           git add k8s/
           git commit -m "Update Kubernetes manifests [skip ci]" || echo "No changes"
