@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/rodrigonascimento001/java-k8s.git'
-    targetRevision: main
+    targetRevision: develop
     path: k8s
   destination:
     server: 'https://kubernetes.default.svc'
