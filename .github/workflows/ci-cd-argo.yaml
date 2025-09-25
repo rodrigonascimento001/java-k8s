@@ -60,15 +60,22 @@ jobs:
           cd java-k8s-manifests
           git config user.name "ci-bot"
           git config user.email "ci-bot@github.com"
-
-          # Atualiza a imagem no deployment.yaml
-          sed -i "s|image: my-app:.*|image: ghcr.io/${{ github.repository }}/my-app:latest|g" deployment.yaml
-
-          # Commit e push apenas se houver mudanças
-          if git diff --quiet; then
-            echo "No changes to commit"
+          
+          DEPLOYMENT_FILE=my-app/deployment.yaml
+          
+          # Verifica se o arquivo existe
+          if [ -f "$DEPLOYMENT_FILE" ]; then
+            echo "Updating image in $DEPLOYMENT_FILE"
+            sed -i "s|image: my-app:.*|image: ghcr.io/${{ github.repository }}/my-app:latest|g" $DEPLOYMENT_FILE
+          
+            # Commit e push apenas se houver mudanças
+            if git diff --quiet; then
+              echo "No changes to commit"
+            else
+              git add $DEPLOYMENT_FILE
+              git commit -m "chore: update image to latest"
+              git push
+            fi
           else
-            git add deployment.yaml
-            git commit -m "chore: update image to latest"
-            git push
+            echo "File $DEPLOYMENT_FILE not found, skipping image update"
           fi
