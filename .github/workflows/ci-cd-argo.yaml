@@ -11,16 +11,17 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 21
+          cache: maven
 
       - name: Build JAR
-        run: ./mvnw clean package -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -31,16 +32,16 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE=ghcr.io/${{ github.repository_owner }}/java-k8s:latest
-          docker build -t $IMAGE .
-          docker push $IMAGE
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/my-app:latest
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
 
       - name: Update manifests repo
         run: |
           git config user.name "ci-bot"
-          git config user.email "ci-bot@users.noreply.github.com"
-          git checkout develop
-          sed -i "s#ghcr.io.*/java-k8s:.*#ghcr.io/${{ github.repository_owner }}/java-k8s:latest#g" manifests/deployment.yaml
-          git add manifests/deployment.yaml
-          git commit -m "ci: update image to latest [skip ci]" || echo "No changes to commit"
-          git push origin develop
+          git config user.email "ci-bot@github.com"
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}-manifests.git
+          cd ${{ github.event.repository.name }}-manifests
+          kustomize edit set image my-app=ghcr.io/${{ github.repository }}/my-app:latest
+          git commit -am "chore: update image to latest"
+          git push
