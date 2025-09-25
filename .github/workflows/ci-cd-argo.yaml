@@ -2,35 +2,66 @@ name: build-test-deploy
 
 on:
   push:
-    branches: [ "develop" ]
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: write   # 🔑 Garante que o GITHUB_TOKEN pode dar push no repo
 
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
       - name: Build Docker image
-        run: |
-          docker build -t java-k8s:latest .
+        run: docker build -t my-app:${{ github.sha }} .
 
-      - name: Push manifests (git ops)
+      - name: Generate K8s manifests
+        run: |
+          mkdir -p k8s
+          cat <<EOF > k8s/deployment.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: my-app
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: my-app
+            template:
+              metadata:
+                labels:
+                  app: my-app
+              spec:
+                containers:
+                  - name: my-app
+                    image: my-app:${{ github.sha }}
+                    ports:
+                      - containerPort: 8080
+          EOF
+
+      - name: Commit & Push manifests (GitOps)
         run: |
           git config user.name "ci-bot"
           git config user.email "ci-bot@example.com"
-          
-          # Garante que target/ nunca vai ser commitado
-          echo -e "\n/target/" >> .gitignore
 
-          # Adiciona apenas os manifests de Kubernetes
           git add k8s/
           git commit -m "Update manifests [skip ci]" || echo "No changes to commit"
-          git push origin develop
+
+          # usa o token do github actions para push
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin HEAD:${{ github.ref }}
