@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   packages: write
+  actions: write  # necessário para push no repositório de manifests
 
 jobs:
   build-and-push:
@@ -40,12 +41,19 @@ jobs:
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
-      - name: Update manifests repo
+      - name: Checkout manifests repository
+        uses: actions/checkout@v4
+        with:
+          repository: rodrigonascimento001/java-k8s-manifests  # <-- nome correto do repositório de manifests
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: java-k8s-manifests
+
+      - name: Update image in manifests
         run: |
+          cd java-k8s-manifests
           git config user.name "ci-bot"
           git config user.email "ci-bot@github.com"
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}-manifests.git
-          cd ${{ github.event.repository.name }}-manifests
           kustomize edit set image my-app=ghcr.io/${{ github.repository }}/my-app:latest
-          git commit -am "chore: update image to latest"
+          git add .
+          git commit -m "chore: update image to latest"
           git push
