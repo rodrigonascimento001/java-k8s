@@ -5,6 +5,9 @@ on:
     branches:
       - develop
 
+permissions:
+  contents: write   # 🔑 Garante que o GITHUB_TOKEN pode dar push no repo
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
