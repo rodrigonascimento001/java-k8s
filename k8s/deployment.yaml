@@ -1,25 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-demo
+  name: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: springboot-demo
+      app: my-app
   template:
     metadata:
       labels:
-        app: springboot-demo
+        app: my-app
     spec:
       containers:
-        - name: app
-          image: springboot-kind-demo:ci   # alinhado com workflow
+        - name: my-app
+          image: my-app:428fd6ab4bfffff8011184b981e9ccf9f53f54be
           ports:
             - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
