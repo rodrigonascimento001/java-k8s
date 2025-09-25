@@ -1,33 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "springboot-demo.fullname" . }}
-  labels:
-    app: {{ include "springboot-demo.name" . }}
+  name: springboot-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ include "springboot-demo.name" . }}
+      app: springboot-demo
   template:
     metadata:
       labels:
-        app: {{ include "springboot-demo.name" . }}
+        app: springboot-demo
     spec:
       containers:
-        - name: {{ include "springboot-demo.name" . }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: app
+          image: springboot-kind-demo:ci   # alinhado com workflow
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: 8080
           readinessProbe:
             httpGet:
-              path: {{ .Values.probe.path }}
-              port: {{ .Values.probe.port }}
-          livenessProbe:
-            httpGet:
-              path: {{ .Values.probe.path }}
-              port: {{ .Values.probe.port }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5

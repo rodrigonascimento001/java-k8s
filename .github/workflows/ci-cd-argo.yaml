@@ -24,14 +24,10 @@ jobs:
       - name: Build Docker image
         run: mvn -B spring-boot:build-image -Dspring-boot.build-image.imageName=springboot-kind-demo:ci
 
-      - name: Set up git for push
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-
       - name: Push manifests (git ops)
         run: |
-          git config user.email "rodrigo_allexandre@yahoo.com.br"
+          git config user.email "ci-bot@example.com"
           git config user.name "ci-bot"
           git add k8s/
           git commit -m "Update Kubernetes manifests [skip ci]" || echo "No changes"
-          git push origin ${{ github.ref_name }}
+          git push origin main
