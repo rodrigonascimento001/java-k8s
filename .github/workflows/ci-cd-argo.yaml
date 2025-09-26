@@ -41,9 +41,9 @@ jobs:
       # 5️⃣ Build e push da imagem Docker
       - name: Build and push Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/java-k8s:latest
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          docker build -t ghcr.io/rodrigonascimento001/java-k8s/java-k8s:$IMAGE_TAG .
+          docker push ghcr.io/rodrigonascimento001/java-k8s/java-k8s:$IMAGE_TAG
 
       # 6️⃣ Checkout do repositório de manifests
       - name: Checkout manifests repository
@@ -56,14 +56,7 @@ jobs:
       # 7️⃣ Atualizar imagem diretamente no deployment.yaml
       - name: Update image in deployment.yaml
         run: |
-          cd java-k8s-manifests
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@github.com"
-          
-          DEPLOYMENT_FILE=my-app/deployment.yaml
-          # Garante que a linha da imagem sempre será sobrescrita
-          sed -i "s|image:.*|image: ghcr.io/${{ github.repository }}/java-k8s:latest|g" $DEPLOYMENT_FILE
-          
-          git add $DEPLOYMENT_FILE
-          git commit -m "chore: update image to latest [ci skip]" || echo "No changes to commit"
+          sed -i "s|image: ghcr.io/rodrigonascimento001/java-k8s/java-k8s:.*|image: ghcr.io/rodrigonascimento001/java-k8s/java-k8s:$IMAGE_TAG|" my-app/deployment.yaml
+          git add my-app/deployment.yaml
+          git commit -m "Update image tag to $IMAGE_TAG"
           git push
