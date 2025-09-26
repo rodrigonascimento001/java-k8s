@@ -6,7 +6,7 @@ on:
       - develop
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   actions: write
 
@@ -63,19 +63,9 @@ jobs:
           
           DEPLOYMENT_FILE=my-app/deployment.yaml
           
-          # Verifica se o arquivo existe
-          if [ -f "$DEPLOYMENT_FILE" ]; then
-            echo "Updating image in $DEPLOYMENT_FILE"
-            sed -i "s|image: my-app:.*|image: ghcr.io/${{ github.repository }}/my-app:latest|g" $DEPLOYMENT_FILE
+          # Garante que a linha da imagem sempre será sobrescrita
+          sed -i "s|image:.*|image: ghcr.io/${{ github.repository }}/my-app:latest|g" $DEPLOYMENT_FILE
           
-            # Commit e push apenas se houver mudanças
-            if git diff --quiet; then
-              echo "No changes to commit"
-            else
-              git add $DEPLOYMENT_FILE
-              git commit -m "chore: update image to latest"
-              git push
-            fi
-          else
-            echo "File $DEPLOYMENT_FILE not found, skipping image update"
-          fi
+          git add $DEPLOYMENT_FILE
+          git commit -m "chore: force update image to latest [ci skip]" || echo "No changes to commit"
+          git push
