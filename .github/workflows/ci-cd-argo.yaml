@@ -62,11 +62,9 @@ jobs:
           cd java-k8s-manifests
           git config user.name "ci-bot"
           git config user.email "ci-bot@github.com"
-          git checkout develop
-
+          git pull origin develop
           DEPLOYMENT_FILE=my-app/deployment.yaml
           sed -i "s|image: ghcr.io/.*/java-k8s:.*|image: ghcr.io/${{ github.repository }}/java-k8s:${IMAGE_TAG}|g" $DEPLOYMENT_FILE
-
           git add $DEPLOYMENT_FILE
           git commit -m "chore: update image to $IMAGE_TAG [ci skip]" || echo "No changes to commit"
           git push origin develop
