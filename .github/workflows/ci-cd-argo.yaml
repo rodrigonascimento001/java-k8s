@@ -47,25 +47,26 @@ jobs:
           docker push $IMAGE_NAME
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      # 6️⃣ Checkout do repositório de manifests
+      # 6️⃣ Checkout do repositório de manifests no branch develop
       - name: Checkout manifests repository
         uses: actions/checkout@v4
         with:
           repository: rodrigonascimento001/java-k8s-manifests
           token: ${{ secrets.GH_PAT }}
           path: java-k8s-manifests
+          ref: develop
 
-      # 7️⃣ Atualizar imagem diretamente no deployment.yaml
+      # 7️⃣ Atualizar imagem diretamente no deployment.yaml e commitar no branch develop
       - name: Update image in deployment.yaml
         run: |
           cd java-k8s-manifests
           git config user.name "ci-bot"
           git config user.email "ci-bot@github.com"
+          git checkout develop
 
           DEPLOYMENT_FILE=my-app/deployment.yaml
-          # Atualiza apenas a linha da imagem correta
           sed -i "s|image: ghcr.io/.*/java-k8s:.*|image: ghcr.io/${{ github.repository }}/java-k8s:${IMAGE_TAG}|g" $DEPLOYMENT_FILE
 
           git add $DEPLOYMENT_FILE
           git commit -m "chore: update image to $IMAGE_TAG [ci skip]" || echo "No changes to commit"
-          git push
+          git push origin develop
