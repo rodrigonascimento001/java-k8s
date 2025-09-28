@@ -63,7 +63,8 @@ jobs:
           git config user.email "ci-bot@github.com"
 
           DEPLOYMENT_FILE=my-app/deployment.yaml
-          sed -i "s|image:.*|image: ghcr.io/${{ github.repository }}/java-k8s:${IMAGE_TAG}|g" $DEPLOYMENT_FILE
+          # Atualiza apenas a linha da imagem correta
+          sed -i "s|image: ghcr.io/.*/java-k8s:.*|image: ghcr.io/${{ github.repository }}/java-k8s:${IMAGE_TAG}|g" $DEPLOYMENT_FILE
 
           git add $DEPLOYMENT_FILE
           git commit -m "chore: update image to $IMAGE_TAG [ci skip]" || echo "No changes to commit"
