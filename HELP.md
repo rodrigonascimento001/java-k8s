@@ -8,7 +8,7 @@ For further reference, please consider the following sections:
 * [Create an OCI image](https://docs.spring.io/spring-boot/3.5.6/maven-plugin/build-image.html)
 * [Spring Web](https://docs.spring.io/spring-boot/3.5.6/reference/web/servlet.html)
      
-               
+                 
 
 
 ### Guides
