@@ -17,3 +17,12 @@ management:
         enabled: true
       readinessState:
         enabled: true
+
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 90   # aumente para 90 ou mais, se necessário
+  periodSeconds: 5
+  timeoutSeconds: 5
