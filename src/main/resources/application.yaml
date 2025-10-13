@@ -1,28 +1,17 @@
+server:
+  port: 8080
+
 management:
   endpoints:
     web:
       exposure:
-        include:
-          - health
-          - info
-          - prometheus
+        include: health,info,prometheus
   endpoint:
-    prometheus:
-      enabled: true
     health:
-      show-details: always
       probes:
         enabled: true
+      show-details: always
       livenessState:
         enabled: true
       readinessState:
         enabled: true
-
-
-readinessProbe:
-  httpGet:
-    path: /actuator/health
-    port: 8080
-  initialDelaySeconds: 60
-  periodSeconds: 10
-  timeoutSeconds: 5
