@@ -21,8 +21,8 @@ management:
 
 readinessProbe:
   httpGet:
-    path: /actuator/health/readiness
+    path: /actuator/health
     port: 8080
-  initialDelaySeconds: 90   # aumente para 90 ou mais, se necessário
-  periodSeconds: 5
+  initialDelaySeconds: 60
+  periodSeconds: 10
   timeoutSeconds: 5
