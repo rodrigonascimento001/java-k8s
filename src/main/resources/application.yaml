@@ -12,6 +12,9 @@ management:
   endpoint:
     prometheus:
       enabled: true
+  metrics:
+    tags:
+      application: my-java-app
     health:
       probes:
         enabled: true
@@ -20,3 +23,4 @@ management:
         enabled: true
       readinessState:
         enabled: true
+
